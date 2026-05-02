@@ -59,6 +59,21 @@ def save_data(co2, o2, n2o, bacteria, status):
 def index():
     return render_template('index.html')
 
+@app.route('/update', methods=['POST'])
+def update():
+    data = request.json
+    co2 = int(data.get('co2', 400))
+    o2 = float(data.get('o2', 21))
+    n2o = int(data.get('n2o', 0))
+    bacteria = int(data.get('bacteria', 0))
+    
+    level, message = analyze(co2, o2, n2o, bacteria)
+    
+    return jsonify({
+        'level': level,
+        'message': message
+    })
+
 @app.route('/api/simulate', methods=['POST'])
 def simulate():
     data = request.json
@@ -68,14 +83,13 @@ def simulate():
     bacteria = int(data.get('bacteria', random.randint(0, 600)))
     
     status, message = analyze(co2, o2, n2o, bacteria)
-    save_data(co2, o2, n2o, bacteria, status)
     
     return jsonify({
         'co2': co2,
         'o2': round(o2, 2),
         'n2o': n2o,
         'bacteria': bacteria,
-        'status': status,
+        'level': status,
         'message': message
     })
 
