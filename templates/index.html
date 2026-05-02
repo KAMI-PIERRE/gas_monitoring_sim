@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Operating Theatre Gas Monitoring System</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1> Operating Theatre Monitoring System</h1>
+    
+    <!-- SENSOR CONTROLS -->
+    <div class="controls">
+        <div class="sensor">
+            <label>CO2 (ppm): <span id="co2_val">400</span></label>
+            <input type="range" id="co2" min="400" max="2000" value="400">
+        </div>
+        <div class="sensor">
+            <label>O2 (%): <span id="o2_val">21</span></label>
+            <input type="range" id="o2" min="18" max="25" step="0.1" value="21">
+        </div>
+        <div class="sensor">
+            <label>N2O (ppm): <span id="n2o_val">0</span></label>
+            <input type="range" id="n2o" min="0" max="50" value="0">
+        </div>
+        <div class="sensor">
+            <label>Bacteria (CFU): <span id="bacteria_val">50</span></label>
+            <input type="range" id="bacteria" min="0" max="1000" value="50">
+        </div>
+    </div>
+
+    <button onclick="sendData()">Update System</button>
+
+    <h2 id="status">STATUS: NORMAL</h2>
+
+    <!-- LED INDICATOR -->
+    <div id="led" class="led"></div>
+
+    <!-- BUZZER -->
+    <div id="buzzer">🔇</div>
+
+    <!-- NOTIFICATION -->
+    <p id="notification">Safe Environment - All Systems Normal</p>
+
+    <hr>
+
+    <!-- ROBOT SECTION -->
+    <h2>🤖 Robot Operation Mode</h2>
+    
+    <div class="mode-select">
+        <select id="mode">
+            <option value="before">Before Operation (Scanning)</option>
+            <option value="during">During Operation (Static Monitoring)</option>
+            <option value="after">After Operation (Final Inspection)</option>
+        </select>
+        <button onclick="startRobot()">Start Simulation</button>
+    </div>
+
+    <div id="room">
+        <div id="robot">🤖</div>
+        <div class="surgical-table"></div>
+        <div class="monitor"></div>
+    </div>
+
+    <p id="robotStatus">Robot Idle - Select a mode and start simulation</p>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>

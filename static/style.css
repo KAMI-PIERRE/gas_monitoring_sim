@@ -1,0 +1,191 @@
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    text-align: center;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: #e0e0e0;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    color: #00d4ff;
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+h2 {
+    color: #fff;
+}
+
+.led {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin: 15px auto;
+    background: #333;
+    border: 3px solid #555;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+}
+
+.green { 
+    background: #00ff00; 
+    box-shadow: 0 0 30px #00ff00, inset 0 0 20px rgba(255,255,255,0.3);
+    border-color: #00cc00;
+}
+.yellow { 
+    background: #ffff00; 
+    box-shadow: 0 0 30px #ffff00, inset 0 0 20px rgba(255,255,255,0.3);
+    border-color: #cccc00;
+}
+.red { 
+    background: #ff0000; 
+    box-shadow: 0 0 30px #ff0000, inset 0 0 20px rgba(255,255,255,0.3);
+    border-color: #cc0000;
+    animation: pulse 0.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+#room {
+    width: 400px;
+    height: 250px;
+    border: 3px solid #00d4ff;
+    margin: 20px auto;
+    position: relative;
+    background: linear-gradient(180deg, #0a0a15 0%, #1a1a2e 100%);
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.3), inset 0 0 50px rgba(0,0,0,0.5);
+}
+
+#robot {
+    position: absolute;
+    font-size: 35px;
+    left: 20px;
+    top: 20px;
+    transition: all 0.6s ease-in-out;
+    z-index: 10;
+}
+
+#robot.scanning {
+    animation: scan 0.3s infinite;
+}
+
+#robot.monitoring {
+    animation: blink 1s infinite;
+}
+
+@keyframes scan {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.surgical-table {
+    position: absolute;
+    width: 80px;
+    height: 40px;
+    background: #2a2a4a;
+    border: 2px solid #4a4a6a;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 5px;
+}
+
+.monitor {
+    position: absolute;
+    width: 50px;
+    height: 40px;
+    background: #1a1a2e;
+    border: 2px solid #00d4ff;
+    top: 20px;
+    right: 20px;
+    border-radius: 3px;
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.sensor {
+    background: rgba(255,255,255,0.1);
+    padding: 15px 25px;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 212, 255, 0.3);
+}
+
+.sensor label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #00d4ff;
+}
+
+.sensor input[type="range"] {
+    width: 150px;
+    cursor: pointer;
+}
+
+button {
+    background: linear-gradient(180deg, #00d4ff 0%, #0099cc 100%);
+    color: #000;
+    border: none;
+    padding: 12px 30px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 25px;
+    cursor: pointer;
+    margin: 10px;
+    transition: all 0.3s;
+}
+
+button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+}
+
+select {
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 5px;
+    background: #1a1a2e;
+    color: #fff;
+    border: 2px solid #00d4ff;
+}
+
+.mode-select {
+    margin: 15px 0;
+}
+
+#buzzer {
+    font-size: 24px;
+    margin: 10px 0;
+}
+
+#notification {
+    color: #aaa;
+    font-style: italic;
+    max-width: 600px;
+    margin: 10px auto;
+}
+
+#robotStatus {
+    color: #00d4ff;
+    font-weight: bold;
+}
+
+hr {
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    margin: 30px 0;
+}
