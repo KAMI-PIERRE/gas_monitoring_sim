@@ -9,28 +9,25 @@ STATIC_DIR = os.path.join(BASE_DIR, "static")
 
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR, static_url_path="/static")
 
-@app.before_request
-def init_db_on_startup():
-    if not os.path.exists("database.db"):
-        init_db()
-
 def init_db():
-    conn = sqlite3.connect("database.db")
-    cur = conn.cursor()
-    cur.execute('''
-    CREATE TABLE IF NOT EXISTS gas_data (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    co2 INTEGER,
-    o2 REAL,
-    n2o INTEGER,
-    bacteria INTEGER,
-    status TEXT,
-    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-    ''')
-    conn.commit()
-    conn.close()
-
+    try:
+        conn = sqlite3.connect("database.db")
+        cur = conn.cursor()
+        cur.execute('''
+        CREATE TABLE IF NOT EXISTS gas_data (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        co2 INTEGER,
+        o2 REAL,
+        n2o INTEGER,
+        bacteria INTEGER,
+        status TEXT,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"Database init error: {e}")
 
 def analyze(co2, o2, n2o, bacteria):
     messages = []
@@ -57,95 +54,110 @@ def analyze(co2, o2, n2o, bacteria):
     else:
         return "NORMAL", "Safe Environment - All Systems Normal"
 
-
 def save_data(co2, o2, n2o, bacteria, status):
-    conn = sqlite3.connect("database.db")
-    cur = conn.cursor()
-    cur.execute('INSERT INTO gas_data (co2, o2, n2o, bacteria, status) VALUES (?, ?, ?, ?, ?)',
-                (co2, o2, n2o, bacteria, status))
-    conn.commit()
-    conn.close()
-
+    try:
+        init_db()
+        conn = sqlite3.connect("database.db")
+        cur = conn.cursor()
+        cur.execute('INSERT INTO gas_data (co2, o2, n2o, bacteria, status) VALUES (?, ?, ?, ?, ?)',
+                    (co2, o2, n2o, bacteria, status))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"Save data error: {e}")
 
 def get_recent_data(limit=12):
-    conn = sqlite3.connect("database.db")
-    cur = conn.cursor()
-    cur.execute('SELECT timestamp, co2, o2, n2o, bacteria, status FROM gas_data ORDER BY id DESC LIMIT ?', (limit,))
-    rows = cur.fetchall()
-    conn.close()
-    return list(reversed(rows))
-
+    try:
+        init_db()
+        conn = sqlite3.connect("database.db")
+        cur = conn.cursor()
+        cur.execute('SELECT timestamp, co2, o2, n2o, bacteria, status FROM gas_data ORDER BY id DESC LIMIT ?', (limit,))
+        rows = cur.fetchall()
+        conn.close()
+        return list(reversed(rows)) if rows else []
+    except Exception as e:
+        print(f"Get data error: {e}")
+        return []
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-
 @app.route('/update', methods=['POST'])
 def update():
-    data = request.json
-    co2 = int(data.get('co2', 400))
-    o2 = float(data.get('o2', 21))
-    n2o = int(data.get('n2o', 0))
-    bacteria = int(data.get('bacteria', 0))
+    try:
+        data = request.json
+        co2 = int(data.get('co2', 400))
+        o2 = float(data.get('o2', 21))
+        n2o = int(data.get('n2o', 0))
+        bacteria = int(data.get('bacteria', 0))
 
-    level, message = analyze(co2, o2, n2o, bacteria)
-    save_data(co2, o2, n2o, bacteria, level)
-    return jsonify({
-        'level': level,
-        'message': message
-    })
-
+        level, message = analyze(co2, o2, n2o, bacteria)
+        save_data(co2, o2, n2o, bacteria, level)
+        return jsonify({
+            'level': level,
+            'message': message
+        })
+    except Exception as e:
+        print(f"Update error: {e}")
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/history')
 def history():
-    rows = get_recent_data(12)
-    labels = [row[0] for row in rows]
-    co2 = [row[1] for row in rows]
-    o2 = [row[2] for row in rows]
-    n2o = [row[3] for row in rows]
-    bacteria = [row[4] for row in rows]
-    status_list = [row[5] for row in rows]
-    status_counts = {
-        'NORMAL': status_list.count('NORMAL'),
-        'WARNING': status_list.count('WARNING'),
-        'CRITICAL': status_list.count('CRITICAL')
-    }
-    latest = {
-        'co2': co2[-1] if co2 else 0,
-        'o2': o2[-1] if o2 else 0,
-        'n2o': n2o[-1] if n2o else 0,
-        'bacteria': bacteria[-1] if bacteria else 0
-    }
-    return jsonify({
-        'labels': labels,
-        'co2': co2,
-        'o2': o2,
-        'n2o': n2o,
-        'bacteria': bacteria,
-        'statusCounts': status_counts,
-        'latest': latest
-    })
-
+    try:
+        rows = get_recent_data(12)
+        labels = [row[0] for row in rows] if rows else []
+        co2 = [row[1] for row in rows] if rows else []
+        o2 = [row[2] for row in rows] if rows else []
+        n2o = [row[3] for row in rows] if rows else []
+        bacteria = [row[4] for row in rows] if rows else []
+        status_list = [row[5] for row in rows] if rows else []
+        status_counts = {
+            'NORMAL': status_list.count('NORMAL'),
+            'WARNING': status_list.count('WARNING'),
+            'CRITICAL': status_list.count('CRITICAL')
+        }
+        latest = {
+            'co2': co2[-1] if co2 else 0,
+            'o2': o2[-1] if o2 else 0,
+            'n2o': n2o[-1] if n2o else 0,
+            'bacteria': bacteria[-1] if bacteria else 0
+        }
+        return jsonify({
+            'labels': labels,
+            'co2': co2,
+            'o2': o2,
+            'n2o': n2o,
+            'bacteria': bacteria,
+            'statusCounts': status_counts,
+            'latest': latest
+        })
+    except Exception as e:
+        print(f"History error: {e}")
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/simulate', methods=['POST'])
 def simulate():
-    data = request.json
-    co2 = int(data.get('co2', random.randint(400, 1200)))
-    o2 = float(data.get('o2', random.uniform(19, 24)))
-    n2o = int(data.get('n2o', random.randint(0, 30)))
-    bacteria = int(data.get('bacteria', random.randint(0, 600)))
-    status, message = analyze(co2, o2, n2o, bacteria)
-    return jsonify({
-        'co2': co2,
-        'o2': round(o2, 2),
-        'n2o': n2o,
-        'bacteria': bacteria,
-        'level': status,
-        'message': message
-    })
+    try:
+        data = request.json
+        co2 = int(data.get('co2', random.randint(400, 1200)))
+        o2 = float(data.get('o2', random.uniform(19, 24)))
+        n2o = int(data.get('n2o', random.randint(0, 30)))
+        bacteria = int(data.get('bacteria', random.randint(0, 600)))
+        status, message = analyze(co2, o2, n2o, bacteria)
+        return jsonify({
+            'co2': co2,
+            'o2': round(o2, 2),
+            'n2o': n2o,
+            'bacteria': bacteria,
+            'level': status,
+            'message': message
+        })
+    except Exception as e:
+        print(f"Simulate error: {e}")
+        return jsonify({'error': str(e)}), 500
 
+init_db()
 
 if __name__ == '__main__':
-    init_db()
     app.run(debug=True)
