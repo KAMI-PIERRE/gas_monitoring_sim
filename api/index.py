@@ -182,5 +182,14 @@ def simulate():
 
 init_db()
 
+@app.route('/health')
+def health():
+    return jsonify({
+        "status": "ok",
+        "template_dir": TEMPLATE_DIR,
+        "exists": os.path.exists(TEMPLATE_DIR),
+        "cwd": os.getcwd()
+    })
+
 if __name__ == '__main__':
     app.run(debug=True)
