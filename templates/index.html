@@ -2,13 +2,237 @@
 <html>
 <head>
     <title>Operating Theatre Gas Monitoring System</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    text-align: center;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: #e0e0e0;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    color: #00d4ff;
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+h2 {
+    color: #fff;
+}
+
+.led {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin: 15px auto;
+    background: #333;
+    border: 3px solid #555;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+}
+
+.green {
+    background: #00ff00;
+    box-shadow: 0 0 30px #00ff00, inset 0 0 20px rgba(255,255,255,0.3);
+    border-color: #00cc00;
+}
+.yellow {
+    background: #ffff00;
+    box-shadow: 0 0 30px #ffff00, inset 0 0 20px rgba(255,255,255,0.3);
+    border-color: #cccc00;
+}
+.red {
+    background: #ff0000;
+    box-shadow: 0 0 30px #ff0000, inset 0 0 20px rgba(255,255,255,0.3);
+    border-color: #cc0000;
+    animation: pulse 0.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+#room {
+    width: 400px;
+    height: 250px;
+    border: 3px solid #00d4ff;
+    margin: 20px auto;
+    position: relative;
+    background: linear-gradient(180deg, #0a0a15 0%, #1a1a2e 100%);
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.3), inset 0 0 50px rgba(0,0,0,0.5);
+}
+
+#robot {
+    position: absolute;
+    font-size: 35px;
+    left: 20px;
+    top: 20px;
+    transition: all 0.6s ease-in-out;
+    z-index: 10;
+}
+
+#robot.scanning {
+    animation: scan 0.3s infinite;
+}
+
+#robot.monitoring {
+    animation: blink 1s infinite;
+}
+
+@keyframes scan {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.surgical-table {
+    position: absolute;
+    width: 80px;
+    height: 40px;
+    background: #2a2a4a;
+    border: 2px solid #4a4a6a;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 5px;
+}
+
+.monitor {
+    position: absolute;
+    width: 50px;
+    height: 40px;
+    background: #1a1a2e;
+    border: 2px solid #00d4ff;
+    top: 20px;
+    right: 20px;
+    border-radius: 3px;
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.sensor {
+    background: rgba(255,255,255,0.1);
+    padding: 15px 25px;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 212, 255, 0.3);
+}
+
+.sensor label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #00d4ff;
+}
+
+.sensor input[type="range"] {
+    width: 150px;
+    cursor: pointer;
+}
+
+button {
+    background: linear-gradient(180deg, #00d4ff 0%, #0099cc 100%);
+    color: #000;
+    border: none;
+    padding: 12px 30px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 25px;
+    cursor: pointer;
+    margin: 10px;
+    transition: all 0.3s;
+}
+
+button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+}
+
+select {
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 5px;
+    background: #1a1a2e;
+    color: #fff;
+    border: 2px solid #00d4ff;
+}
+
+.mode-select {
+    margin: 15px 0;
+}
+
+#buzzer {
+    font-size: 24px;
+    margin: 10px 0;
+}
+
+#notification {
+    color: #aaa;
+    font-style: italic;
+    max-width: 600px;
+    margin: 10px auto;
+}
+
+#robotStatus {
+    color: #00d4ff;
+    font-weight: bold;
+}
+
+hr {
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    margin: 30px 0;
+}
+
+.dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin: 20px 0 40px;
+}
+
+.chart-card {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(0, 212, 255, 0.18);
+    border-radius: 18px;
+    padding: 18px;
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.08);
+}
+
+.chart-card h2 {
+    margin-top: 0;
+    margin-bottom: 14px;
+    color: #00d4ff;
+    font-size: 18px;
+}
+
+canvas {
+    width: 100% !important;
+    height: 260px !important;
+}
+
+button.secondary {
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+    border: 1px solid rgba(0, 212, 255, 0.5);
+}
+    </style>
 </head>
 <body>
-    <h1> Operating Theatre Monitoring System</h1>
-    
-    <!-- SENSOR CONTROLS -->
+    <h1>Operating Theatre Monitoring System</h1>
+
     <div class="controls">
         <div class="sensor">
             <label>CO2 (ppm): <span id="co2_val">400</span></label>
@@ -32,14 +256,8 @@
     <button class="secondary" onclick="refreshDashboard()">Refresh Charts</button>
 
     <h2 id="status">STATUS: NORMAL</h2>
-
-    <!-- LED INDICATOR -->
     <div id="led" class="led"></div>
-
-    <!-- BUZZER -->
     <div id="buzzer">🔇</div>
-
-    <!-- NOTIFICATION -->
     <p id="notification">Safe Environment - All Systems Normal</p>
 
     <section class="dashboard">
@@ -58,10 +276,8 @@
     </section>
 
     <hr>
-
-    <!-- ROBOT SECTION -->
     <h2>🤖 Robot Operation Mode</h2>
-    
+
     <div class="mode-select">
         <select id="mode">
             <option value="before">Before Operation (Scanning)</option>
@@ -79,6 +295,342 @@
 
     <p id="robotStatus">Robot Idle - Select a mode and start simulation</p>
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+const co2 = document.getElementById("co2");
+const o2 = document.getElementById("o2");
+const n2o = document.getElementById("n2o");
+const bacteria = document.getElementById("bacteria");
+const co2_val = document.getElementById("co2_val");
+const o2_val = document.getElementById("o2_val");
+const n2o_val = document.getElementById("n2o_val");
+const bacteria_val = document.getElementById("bacteria_val");
+const statusLabel = document.getElementById("status");
+const led = document.getElementById("led");
+const buzzer = document.getElementById("buzzer");
+const notification = document.getElementById("notification");
+const robotStatus = document.getElementById("robotStatus");
+const robot = document.getElementById("robot");
+
+let trendChart = null;
+let latestChart = null;
+let statusChart = null;
+let chartHistory = [];
+
+function createInitialHistoryEntry() {
+    return {
+        timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', second: '2-digit'}),
+        co2: Number(co2.value),
+        o2: Number(o2.value),
+        n2o: Number(n2o.value),
+        bacteria: Number(bacteria.value),
+        level: 'NORMAL'
+    };
+}
+
+function updateValues() {
+    co2_val.innerText = co2.value;
+    o2_val.innerText = o2.value;
+    n2o_val.innerText = n2o.value;
+    bacteria_val.innerText = bacteria.value;
+}
+
+co2.oninput = updateValues;
+o2.oninput = updateValues;
+n2o.oninput = updateValues;
+bacteria.oninput = updateValues;
+
+function sendData() {
+    fetch('/update', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            co2: Number(co2.value),
+            o2: Number(o2.value),
+            n2o: Number(n2o.value),
+            bacteria: Number(bacteria.value)
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        const reading = {
+            timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', second: '2-digit'}),
+            co2: Number(co2.value),
+            o2: Number(o2.value),
+            n2o: Number(n2o.value),
+            bacteria: Number(bacteria.value),
+            level: data.level || 'NORMAL'
+        };
+
+        addHistoryEntry(reading);
+        updateDashboard(data);
+        fetchHistory();
+    })
+    .catch(() => {
+        notification.innerText = 'Unable to reach the server. Check deployment or network.';
+    });
+}
+
+function addHistoryEntry(reading) {
+    chartHistory.push(reading);
+    if (chartHistory.length > 12) {
+        chartHistory.shift();
+    }
+    localStorage.setItem('gasDashboardHistory', JSON.stringify(chartHistory));
+}
+
+function loadHistoryFromStorage() {
+    const stored = localStorage.getItem('gasDashboardHistory');
+    if (stored) {
+        try {
+            chartHistory = JSON.parse(stored);
+        } catch (error) {
+            chartHistory = [];
+        }
+    }
+    if (chartHistory.length === 0) {
+        addHistoryEntry(createInitialHistoryEntry());
+    }
+}
+
+function updateChartsFromStorage() {
+    const labels = chartHistory.map(entry => entry.timestamp);
+    const co2Data = chartHistory.map(entry => entry.co2);
+    const o2Data = chartHistory.map(entry => entry.o2);
+    const latest = chartHistory[chartHistory.length - 1] || {co2: 0, o2: 0, n2o: 0, bacteria: 0};
+    const statusCounts = {
+        NORMAL: chartHistory.filter(entry => entry.level === 'NORMAL').length,
+        WARNING: chartHistory.filter(entry => entry.level === 'WARNING').length,
+        CRITICAL: chartHistory.filter(entry => entry.level === 'CRITICAL').length
+    };
+
+    updateCharts({
+        labels,
+        co2: co2Data,
+        o2: o2Data,
+        latest,
+        statusCounts
+    });
+}
+
+function fetchHistory() {
+    fetch('/history')
+        .then(res => res.json())
+        .then(data => {
+            if (data && data.labels && data.labels.length > 0) {
+                updateCharts({
+                    labels: data.labels,
+                    co2: data.co2,
+                    o2: data.o2,
+                    latest: data.latest,
+                    statusCounts: data.statusCounts
+                });
+            } else {
+                updateChartsFromStorage();
+            }
+        })
+        .catch(() => {
+            updateChartsFromStorage();
+        });
+}
+
+function updateDashboard(data) {
+    const level = data.level || data.status || 'NORMAL';
+    statusLabel.innerText = 'STATUS: ' + level;
+    led.className = 'led';
+
+    if (level === 'NORMAL') {
+        led.classList.add('green');
+        buzzer.innerText = '🔇';
+    } else if (level === 'WARNING') {
+        led.classList.add('yellow');
+        buzzer.innerText = '🔊 BEEP';
+    } else {
+        led.classList.add('red');
+        buzzer.innerText = '🚨 ALARM';
+    }
+
+    notification.innerText = data.message || 'Status updated.';
+}
+
+function refreshDashboard() {
+    fetchHistory();
+}
+
+function initCharts() {
+    const trendCtx = document.getElementById('trendChart').getContext('2d');
+    const latestCtx = document.getElementById('latestChart').getContext('2d');
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+
+    trendChart = new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    label: 'CO2 (ppm)',
+                    data: [],
+                    borderColor: '#00d4ff',
+                    backgroundColor: 'rgba(0, 212, 255, 0.2)',
+                    tension: 0.3,
+                    yAxisID: 'y1'
+                },
+                {
+                    label: 'O2 (%)',
+                    data: [],
+                    borderColor: '#7cff00',
+                    backgroundColor: 'rgba(124, 255, 0, 0.2)',
+                    tension: 0.3,
+                    yAxisID: 'y2'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'top' } },
+            scales: {
+                x: { grid: { color: 'rgba(255,255,255,0.08)' } },
+                y1: {
+                    type: 'linear',
+                    position: 'left',
+                    title: { display: true, text: 'CO2 (ppm)' },
+                    grid: { color: 'rgba(255,255,255,0.08)' }
+                },
+                y2: {
+                    type: 'linear',
+                    position: 'right',
+                    title: { display: true, text: 'O2 (%)' },
+                    grid: { drawOnChartArea: false, color: 'rgba(255,255,255,0.08)' }
+                }
+            }
+        }
+    });
+
+    latestChart = new Chart(latestCtx, {
+        type: 'bar',
+        data: {
+            labels: ['CO2', 'O2', 'N2O', 'Bacteria'],
+            datasets: [{
+                label: 'Latest Reading',
+                data: [0, 0, 0, 0],
+                backgroundColor: ['#00d4ff', '#7cff00', '#ffea00', '#ff4d4d']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.08)' } }
+            }
+        }
+    });
+
+    statusChart = new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['NORMAL', 'WARNING', 'CRITICAL'],
+            datasets: [{
+                data: [0, 0, 0],
+                backgroundColor: ['#00ff88', '#ffcc00', '#ff4d4d']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+}
+
+function updateCharts(data) {
+    if (!trendChart || !latestChart || !statusChart) return;
+
+    const labels = data.labels && data.labels.length ? data.labels : ['No data'];
+    const co2Data = data.co2 && data.co2.length ? data.co2 : [0];
+    const o2Data = data.o2 && data.o2.length ? data.o2 : [0];
+
+    trendChart.data.labels = labels;
+    trendChart.data.datasets[0].data = co2Data;
+    trendChart.data.datasets[1].data = o2Data;
+    trendChart.update();
+
+    latestChart.data.datasets[0].data = [
+        data.latest?.co2 || 0,
+        data.latest?.o2 || 0,
+        data.latest?.n2o || 0,
+        data.latest?.bacteria || 0
+    ];
+    latestChart.update();
+
+    statusChart.data.datasets[0].data = [
+        data.statusCounts?.NORMAL || 0,
+        data.statusCounts?.WARNING || 0,
+        data.statusCounts?.CRITICAL || 0
+    ];
+    statusChart.update();
+}
+
+function moveRobot(x, y) {
+    robot.style.left = x + 'px';
+    robot.style.top = y + 'px';
+}
+
+function stopMonitoring() {
+    if (window.monitoringInterval) {
+        clearInterval(window.monitoringInterval);
+    }
+}
+
+function startRobot() {
+    stopMonitoring();
+    const mode = document.getElementById('mode').value;
+
+    if (mode === 'before') beforeOperation();
+    else if (mode === 'during') duringOperation();
+    else afterOperation();
+}
+
+function beforeOperation() {
+    robotStatus.innerText = 'Scanning before operation...';
+    robot.classList.add('scanning');
+    animate([[0,0],[300,0],[300,150],[0,150],[150,75]], 500, true);
+}
+
+function duringOperation() {
+    robotStatus.innerText = 'Static monitoring...';
+    robot.classList.add('monitoring');
+    moveRobot(150,75);
+    window.monitoringInterval = setInterval(() => { sendData(); }, 2000);
+}
+
+function afterOperation() {
+    robotStatus.innerText = 'Final inspection...';
+    robot.classList.remove('monitoring', 'scanning');
+    animate([[150,75],[300,50],[200,150],[50,120],[0,0]], 1200, true);
+}
+
+function animate(path, speed, monitor = false) {
+    let i = 0;
+    function step() {
+        if (i < path.length) {
+            moveRobot(path[i][0], path[i][1]);
+            if (monitor) sendData();
+            i++;
+            setTimeout(step, speed);
+        } else {
+            robot.classList.remove('monitoring', 'scanning');
+        }
+    }
+    step();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    updateValues();
+    loadHistoryFromStorage();
+    initCharts();
+    updateChartsFromStorage();
+    fetchHistory();
+});
+    </script>
 </body>
 </html>
