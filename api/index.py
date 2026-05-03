@@ -16,23 +16,10 @@ def find_templates_dir():
             return path
     return candidates[0]
 
-def find_static_dir():
-    candidates = [
-        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "static"),
-        os.path.join(os.getcwd(), "static"),
-        "/var/task/static",
-        os.path.join(os.path.dirname(__file__), "..", "static"),
-    ]
-    for path in candidates:
-        if os.path.exists(path):
-            return path
-    return candidates[0]
-
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEMPLATE_DIR = find_templates_dir()
-STATIC_DIR = find_static_dir()
 
-app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR, static_url_path="/static")
+app = Flask(__name__, template_folder=TEMPLATE_DIR)
 
 @app.errorhandler(Exception)
 def handle_error(e):
