@@ -2,12 +2,23 @@ from flask import Flask, render_template, request, jsonify
 import sqlite3
 import random
 import os
+import sys
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEMPLATE_DIR = os.path.join(BASE_DIR, "templates")
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 
+if not os.path.exists(TEMPLATE_DIR):
+    TEMPLATE_DIR = os.path.join(os.getcwd(), "templates")
+if not os.path.exists(STATIC_DIR):
+    STATIC_DIR = os.path.join(os.getcwd(), "static")
+
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR, static_url_path="/static")
+
+@app.errorhandler(Exception)
+def handle_error(e):
+    print(f"Error: {e}", file=sys.stderr)
+    return jsonify({"error": str(e), "type": type(e).__name__}), 500
 
 def init_db():
     try:
@@ -81,7 +92,19 @@ def get_recent_data(limit=12):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    try:
+        if not os.path.exists(TEMPLATE_DIR):
+            return jsonify({
+                "error": "Template directory not found",
+                "template_dir": TEMPLATE_DIR,
+                "cwd": os.getcwd(),
+                "base_dir": BASE_DIR,
+                "file": __file__
+            }), 500
+        return render_template('index.html')
+    except Exception as e:
+        print(f"Index route error: {e}", file=sys.stderr)
+        return jsonify({"error": str(e), "template_dir": TEMPLATE_DIR, "cwd": os.getcwd()}), 500
 
 @app.route('/update', methods=['POST'])
 def update():
