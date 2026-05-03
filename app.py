@@ -54,6 +54,16 @@ def save_data(co2, o2, n2o, bacteria, status):
     conn.commit()
     conn.close()
 
+
+def get_recent_data(limit=12):
+    conn = sqlite3.connect("database.db")
+    cur = conn.cursor()
+    cur.execute('SELECT timestamp, co2, o2, n2o, bacteria, status FROM gas_data ORDER BY id DESC LIMIT ?', (limit,))
+    rows = cur.fetchall()
+    conn.close()
+    return list(reversed(rows))
+
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -68,6 +78,36 @@ def update():
     level, message = analyze(co2, o2, n2o, bacteria)
     save_data(co2, o2, n2o, bacteria, level)
     return jsonify({"level": level, "message": message})
+
+@app.route("/history")
+def history():
+    rows = get_recent_data(12)
+    labels = [row[0] for row in rows]
+    co2 = [row[1] for row in rows]
+    o2 = [row[2] for row in rows]
+    n2o = [row[3] for row in rows]
+    bacteria = [row[4] for row in rows]
+    status_list = [row[5] for row in rows]
+    status_counts = {
+        'NORMAL': status_list.count('NORMAL'),
+        'WARNING': status_list.count('WARNING'),
+        'CRITICAL': status_list.count('CRITICAL')
+    }
+    latest = {
+        'co2': co2[-1] if co2 else 0,
+        'o2': o2[-1] if o2 else 0,
+        'n2o': n2o[-1] if n2o else 0,
+        'bacteria': bacteria[-1] if bacteria else 0
+    }
+    return jsonify({
+        'labels': labels,
+        'co2': co2,
+        'o2': o2,
+        'n2o': n2o,
+        'bacteria': bacteria,
+        'statusCounts': status_counts,
+        'latest': latest
+    })
 
 @app.route("/simulate", methods=["POST"])
 def simulate():

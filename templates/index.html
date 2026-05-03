@@ -3,6 +3,7 @@
 <head>
     <title>Operating Theatre Gas Monitoring System</title>
     <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <h1> Operating Theatre Monitoring System</h1>
@@ -28,6 +29,7 @@
     </div>
 
     <button onclick="sendData()">Update System</button>
+    <button class="secondary" onclick="refreshDashboard()">Refresh Charts</button>
 
     <h2 id="status">STATUS: NORMAL</h2>
 
@@ -39,6 +41,21 @@
 
     <!-- NOTIFICATION -->
     <p id="notification">Safe Environment - All Systems Normal</p>
+
+    <section class="dashboard">
+        <div class="chart-card">
+            <h2>Trend Overview</h2>
+            <canvas id="trendChart"></canvas>
+        </div>
+        <div class="chart-card">
+            <h2>Latest Sensor Values</h2>
+            <canvas id="latestChart"></canvas>
+        </div>
+        <div class="chart-card">
+            <h2>Alert Distribution</h2>
+            <canvas id="statusChart"></canvas>
+        </div>
+    </section>
 
     <hr>
 
