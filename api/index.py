@@ -4,14 +4,33 @@ import random
 import os
 import sys
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-TEMPLATE_DIR = os.path.join(BASE_DIR, "templates")
-STATIC_DIR = os.path.join(BASE_DIR, "static")
+def find_templates_dir():
+    candidates = [
+        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "templates"),
+        os.path.join(os.getcwd(), "templates"),
+        "/var/task/templates",
+        os.path.join(os.path.dirname(__file__), "..", "templates"),
+    ]
+    for path in candidates:
+        if os.path.exists(path):
+            return path
+    return candidates[0]
 
-if not os.path.exists(TEMPLATE_DIR):
-    TEMPLATE_DIR = os.path.join(os.getcwd(), "templates")
-if not os.path.exists(STATIC_DIR):
-    STATIC_DIR = os.path.join(os.getcwd(), "static")
+def find_static_dir():
+    candidates = [
+        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "static"),
+        os.path.join(os.getcwd(), "static"),
+        "/var/task/static",
+        os.path.join(os.path.dirname(__file__), "..", "static"),
+    ]
+    for path in candidates:
+        if os.path.exists(path):
+            return path
+    return candidates[0]
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TEMPLATE_DIR = find_templates_dir()
+STATIC_DIR = find_static_dir()
 
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR, static_url_path="/static")
 
