@@ -3,7 +3,16 @@ import sqlite3
 import random
 import os
 
-app = Flask(__name__, template_folder="../templates", static_folder="../static")
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TEMPLATE_DIR = os.path.join(BASE_DIR, "templates")
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+
+app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR, static_url_path="/static")
+
+@app.before_request
+def init_db_on_startup():
+    if not os.path.exists("database.db"):
+        init_db()
 
 def init_db():
     conn = sqlite3.connect("database.db")
